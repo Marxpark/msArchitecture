@@ -1,0 +1,20 @@
+{
+  "name": "msuser",
+  "version": "1.0.0",
+  "description": "",
+  "main": "msUser.js",
+  "scripts": {
+    "start": "nodemon --exec babel-node msUser.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/node": "^7.8.7",
+    "@babel/preset-env": "^7.9.6",
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.4",
+    "pino": "^6.2.1"
+  }
+}
