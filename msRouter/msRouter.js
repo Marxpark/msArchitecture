@@ -2,16 +2,10 @@ const express = require("express")
 const socketIO = require('socket.io');
 const http = require('http')
 
-
 const pino = require('pino');
 require('dotenv').config();
 
-
-
 const LOGGER = pino({ level: process.env.LOG_LEVEL || 'info' });
-
-
-
 
 LOGGER.info("Starting server")
 let server = http.createServer(express()) 
@@ -28,7 +22,5 @@ io.on('connection', (socket)=>{
         LOGGER.debug(event)
     })
 });
-
-
 
 server.listen(process.env.INTERNAL_API_PORT)

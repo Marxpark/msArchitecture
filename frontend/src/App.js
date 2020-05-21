@@ -1,8 +1,11 @@
 import React from 'react';
 import logo from './logo.svg';
+import withSocket from "./withSocket"
 import './App.css';
 
-function App() {
+function App({socketListen, socketSend}) {
+
+  socketSend("message", "i am connected")
 
   return (
     <div className="App">
@@ -24,4 +27,4 @@ function App() {
   );
 }
 
-export default App;
+export default withSocket(App);
