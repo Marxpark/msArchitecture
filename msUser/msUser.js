@@ -1,5 +1,6 @@
 var rabbit = require('amqplib/callback_api');
 const pino = require('pino');
+require('dotenv').config();
 
 const LOGGER = pino({ level: process.env.LOG_LEVEL || 'info' });
 
@@ -18,21 +19,13 @@ rabbit.connect('amqp://localhost', (error0, connection) => {
         }
         rabbit.channel = channel
 
-        channel.assertQueue("userLogin", {
-            durable: false
+        LOGGER.info("Creating queues on channel")
+        queues.forEach(queue => {
+            channel.assertQueue(queue, {
+                durable: false
+            })
+            LOGGER.info(`Created ${queue} on channel`)
         })
-
-        channel.assertQueue("frontendMessage", {
-            durable: false
-        })
-
-        // LOGGER.info("Creating queues on channel")
-        // queues.forEach(queue => {
-        //     channel.assertQueue(queue, {
-        //         durable: false
-        //     })
-        //     LOGGER.info(`Created ${queue} on channel`)
-        // })
         
         channel.send = (queue, message) => {
             channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)))
@@ -52,6 +45,14 @@ rabbit.connect('amqp://localhost', (error0, connection) => {
 
 async function onUserLogin(event) {
     LOGGER.debug(event)
+
+    // TODO save user to database & anything else you might want to do
+
     LOGGER.debug(`Sending login response`)
-    rabbit.channel.send("frontendMessages", "Thank you for loging in!")
+    let response = {
+        type: "loginResponse",
+        res: "User logged in",
+        socketId: event.socketId
+    }
+    rabbit.channel.send("frontendMessage", response)
 }

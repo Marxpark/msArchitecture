@@ -5,7 +5,13 @@ import './App.css';
 
 function App({socketListen, socketSend}) {
 
-  socketSend("message", "i am connected")
+  socketListen("loginResponse", (response) => {
+    console.log(response)
+  })
+
+  socketSend("message", {name: "i am connected"})
+
+  
 
   return (
     <div className="App">

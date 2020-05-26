@@ -7,6 +7,8 @@ const pino = require('pino');
 require('dotenv').config();
 
 const LOGGER = pino({ level: process.env.LOG_LEVEL || 'info' });
+const queues = ["userLogin", "frontendMessages"]
+
 
 LOGGER.info("Starting server")
 let server = http.createServer(express()) 
@@ -28,21 +30,13 @@ rabbit.connect('amqp://localhost', (error0, connection) => {
         }
         rabbit.channel = channel
 
-        channel.assertQueue("userLogin", {
-            durable: false
+        LOGGER.info("Creating queues on channel")
+        queues.forEach(queue => {
+            channel.assertQueue(queue, {
+                durable: false
+            })
+            LOGGER.info(`Created ${queue} on channel`)
         })
-
-        channel.assertQueue("frontendMessage", {
-            durable: false
-        })
-
-        // LOGGER.info("Creating queues on channel")
-        // queues.forEach(queue => {
-        //     channel.assertQueue(queue, {
-        //         durable: false
-        //     })
-        //     LOGGER.info(`Created ${queue} on channel`)
-        // })
         
         channel.send = (queue, message) => {
             channel.sendToQueue(queue, Buffer.from(JSON.stringify(message)))
@@ -50,8 +44,9 @@ rabbit.connect('amqp://localhost', (error0, connection) => {
 
         LOGGER.info("Attaching consumers...")
         channel.consume("frontendMessage", (event) => {
-            console.log(JSON.parse(event.content.toString()))
-            // onUserLogin(JSON.parse(event.content.toString()))
+            let resData = JSON.parse(event.content.toString())
+            LOGGER.debug(resData)
+            io.to(resData.socketId).emit(resData.type, resData.res)
         }, {
             noAck: true
         })
@@ -63,11 +58,9 @@ rabbit.connect('amqp://localhost', (error0, connection) => {
 
 io.on('connection', (socket)=>{
     LOGGER.debug(`New user connected ${socket.id}`)
-
     socket.on("message", (data) => {
-        event.socketId = socket.id
-        event.data = JSON.parse(data)
-        LOGGER.debug(event)
+        let event = JSON.parse(data)
+        event.socketId = socket.id  
         rabbit.channel.send("userLogin", event)
     })
 });
