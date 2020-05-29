@@ -1,7 +1,13 @@
 import React from 'react';
-import logo from './logo.svg';
-import withSocket from "./withSocket"
+import withSocket from "./utils/withSocket"
 import './App.css';
+import NavBar from './components/NavBar';
+import { useAuth0 } from "./react-auth0-spa";
+import { Router, Route, Switch } from "react-router-dom";
+import Profile from "./components/Profile";
+import history from "./utils/history";
+import PrivateRoute from './utils/PrivateRoute';
+
 
 function App({socketListen, socketSend}) {
 
@@ -11,24 +17,23 @@ function App({socketListen, socketSend}) {
 
   socketSend("message", {name: "i am connected"})
 
-  
+  const { loading } = useAuth0();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router history={history}>
+        <header>
+          <NavBar />
+        </header>
+        <Switch>
+          <Route path="/" exact />
+          <PrivateRoute path="/profile" component={Profile} />
+        </Switch>
+      </Router>
     </div>
   );
 }
